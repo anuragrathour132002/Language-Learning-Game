@@ -1,0 +1,87 @@
+// This is your Prisma schema file,resu
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id    Int    @id @default(autoincrement())
+    email String @unique
+    name  String
+
+    hash  String
+    level Int    @default(1)
+
+    languages Language[]
+    results   Result[]
+    quizes    Quiz[]
+}
+
+model Result {
+    id Int @id @default(autoincrement())
+
+    totalScore Int @default(0)
+    score      Int @default(0)
+
+    user   User @relation(fields: [userId], references: [id])
+    userId Int
+    quiz   Quiz @relation(fields: [quizId], references: [id])
+    quizId Int
+
+    questions     Question[]
+    markedOptions Option[]
+
+    @@unique([quizId, userId])
+}
+
+model Language {
+    id Int @id @default(autoincrement())
+
+    name     String
+    quizes   Quiz[]
+    users    User[]
+    Question Question[]
+}
+
+model Quiz {
+    id Int @id @default(autoincrement())
+
+    name        String
+    description String?
+
+    users   User[]
+    results Result[]
+
+    language   Language @relation(fields: [languageId], references: [id])
+    languageId Int
+}
+
+model Question {
+    id Int @id @default(autoincrement())
+
+    text       String
+    difficulty Int    @default(1)
+
+    language   Language @relation(fields: [languageId], references: [id])
+    languageId Int
+
+    results Result[]
+    options Option[]
+}
+
+model Option {
+    id   Int    @id @default(autoincrement())
+    text String
+
+    correct Boolean @default(false)
+
+    question   Question @relation(fields: [questionId], references: [id])
+    questionId Int
+    results    Result[]
+}
